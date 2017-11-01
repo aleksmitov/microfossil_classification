@@ -1,0 +1,12 @@
+{
+  "input_image_dims": [227, 227],
+  "models_dir": "models/",
+  "training_set": [
+    ["processed_data/training_set/bulloides", 0],
+    ["processed_data/training_set/other", 1]
+  ],
+  "testing_set": [
+    ["processed_data/testing_set/bulloides", 0],
+    ["processed_data/testing_set/other", 1]
+  ]
+}
