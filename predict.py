@@ -31,12 +31,12 @@ def define_computational_graph(input_dims, net_architecture, number_of_classes):
 
     with tf.variable_scope("inputs"):
         x = tf.placeholder(dtype=tf.uint8, shape=input_dims, name="x")
-        x = tf.cast(x, tf.float32) / 255  # Convert to [0, 1] range
+        x_transformed = tf.cast(x, tf.float32) / 255  # Convert to [0, 1] range
         dropout_rate = tf.placeholder(dtype=tf.float32, shape=[], name="dropout_rate")
 
     with tf.variable_scope("net_architecture"):
         # Getting net output scores and name
-        y_prime, network_name = net_architecture(x, number_of_classes, dropout_rate, is_training=False)
+        y_prime, network_name = net_architecture(x_transformed, number_of_classes, dropout_rate, is_training=False)
         y_prime = tf.nn.softmax(y_prime)  # Squish scores in [0, 1]
 
     # saver for checkpoints
