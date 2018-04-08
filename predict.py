@@ -14,7 +14,7 @@ IMAGE_SOURCE_DIR = "./unprocessed_crops"
 IMAGE_DEST_DIR = "./processed_crops"
 METADATA_FILE = "model_metadata.json"
 CSV_OUTPUT = "records.csv"
-MODEL_TO_LOAD = "Alex_Net_classes_2_channels_3_batch_512_learning_rate_1e-05/step_3300_Alex_Net_classes_2_channels_3_batch_512_learning_rate_0.0001"
+MODEL_TO_LOAD = "Alex_Net_classes_2_channels_3_batch_512_learning_rate_0.0001/step_2000_Alex_Net_classes_2_channels_3_batch_512_learning_rate_0.0001"
 HIGH_CONFIDENCE = 0.85
 
 
@@ -168,7 +168,7 @@ def main():
         saver.restore(session, model_path)
         print("Loaded model weights: {}".format(model_path))
         records = classify_microfossils(IMAGE_SOURCE_DIR, IMAGE_DEST_DIR, prediction_func, input_image_dims,
-                                HIGH_CONFIDENCE, read_grayscale_images=False, recursive_destination_structure=False)
+                                HIGH_CONFIDENCE, read_grayscale_images=False, recursive_destination_structure=True)
         print("Writing csv output...")
         writer = csv.writer(csv_file, delimiter=",", quotechar="|", quoting=csv.QUOTE_MINIMAL)
         for record_image_path, record_image_classification in records:
