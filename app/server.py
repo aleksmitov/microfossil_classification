@@ -21,6 +21,7 @@ os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import extract_microfossils
 import neural_networks
 import predict
+import db_queries
 from Metadata import Metadata
 
 ALLOWED_INPUT_IMAGE_EXTENSIONS = set(["png", "tif", "jpg", "jpeg", "bmp"])

@@ -10,7 +10,7 @@ def initialise(database_file):
     # Create table
     cursor.execute("""CREATE TABLE batches
                  (id integer primary key not null, submitted_on date not null, location text,
-                            images_processed integer, crops_generated integer, elapsed_time date, size integer)""")
+                images_processed integer, crops_generated integer, elapsed_time date, size integer, status text)""")
 
     conn.commit()
     conn.close()
