@@ -30,7 +30,7 @@ METADATA_FILE = "../model_metadata.json"
 MODEL_TO_LOAD = "Alex_Net_classes_2_channels_3_batch_512_learning_rate_1e-05/Alex_Net_classes_2_channels_3"
 CROP_DIMS = (200, 200)
 ARCHIVES_DIR = "./uploads/archives"
-CONFIDENCE_THRESHOLD = 0.85
+CONFIDENCE_THRESHOLD = 0.40
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "./static/uploads"
@@ -172,7 +172,8 @@ class BatchProcessingProcess(Process):
         os.makedirs(extraction_dir_path)  # Create the dir
 
         self.zip_object.extractall(working_dir_path)
-        extract_microfossils.extract_microfossils_in_dir(working_dir_path, extraction_dir_path, self.crop_dims,
+        extract_microfossils.extract_microfossils_in_dir(working_dir_path, extraction_dir_path,
+                                                                self.crop_dims,
                                                                 self.min_microfossil_size, self.clean_particles)
         #shutil.rmtree(working_dir_path)
         print("Working dir to delete: {}".format(working_dir_path))
@@ -185,15 +186,22 @@ class BatchProcessingProcess(Process):
         x, y_prime, dropout, saver = predict.define_computational_graph(input_dims=input_dims,
                                                         net_architecture=neural_net,
                                                         number_of_classes=self.model_metadata.number_of_classes)
-        records_file_path = os.path.join(extraction_dir_path, "records.csv")
 
+        unique_dirname = str(uuid.uuid4())
+        classification_dir_path = os.path.join(self.archives_dir, unique_dirname)
+        os.makedirs(classification_dir_path)  # Create the dir
+        records_file_path = os.path.join(classification_dir_path, "records.csv")
         print("Starting classification...")
         with tf.Session() as session, open(records_file_path, "wb") as csv_file:
             prediction_func = functools.partial(predict.predict, x=x, y_prime=y_prime, dropout=dropout, session=session)
             session.run(tf.global_variables_initializer())
             saver.restore(session, self.model_weights)
+
+
             print("Loaded model weights: {}".format(self.model_weights))
-            records = predict.classify_microfossils(working_dir_path, extraction_dir_path, prediction_func,
+            relative_path = ""
+            records = predict.classify_microfossils(extraction_dir_path, classification_dir_path, relative_path,
+                                                    prediction_func,
                                                     input_image_dims,
                                                     self.confidence_threshold, False,
                                                     recursive_destination_structure=True)
@@ -203,10 +211,16 @@ class BatchProcessingProcess(Process):
                 writer.writerow([record_image_path, record_image_classification.round(decimals=2)])
         print("Done with classification output")
 
-        # Now zip extraction dir
+        # shutil.rmtree(extraction_dir_path)
+        print("Extraction dir to delete: {}".format(extraction_dir_path))
+
+        # Now zip classification dir
         unique_filename = str(uuid.uuid4()) + ".zip"
         zip_path = os.path.join(self.public_files_dir, unique_filename)
-        shutil.make_archive(zip_path, 'zip', extraction_dir_path)
+        shutil.make_archive(zip_path, 'zip', classification_dir_path)
+
+        # shutil.rmtree(classification_dir_path)
+        print("Classification dir to delete: {}".format(classification_dir_path))
         print("Done archiving!")
 
 

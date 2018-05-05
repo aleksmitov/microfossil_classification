@@ -169,7 +169,8 @@ def extract_microfossils(grayscale_image, min_microfossil_pixel_size, crop_dims,
     return unfiltered_crops, filtered_crops
 
 
-def extract_microfossils_in_dir(source_dir, destination_dir, crop_dims, min_microfossil_size, clean_particles):
+def extract_microfossils_in_dir(source_dir, destination_dir,
+                                            crop_dims, min_microfossil_size, clean_particles):
     """
     Recursively extracts microfossils from images in the source dir and its subdirs
     :param source_dir: string with the path to the source folder
@@ -216,7 +217,8 @@ def extract_microfossils_in_dir(source_dir, destination_dir, crop_dims, min_micr
     for subdir in sub_dirs:
         source_subdir = os.path.join(source_dir, subdir)
         destination_subdir = os.path.join(destination_dir, subdir)
-        extract_microfossils_in_dir(source_subdir, destination_subdir)
+        extract_microfossils_in_dir(source_subdir, destination_subdir,
+                                                    crop_dims, min_microfossil_size, clean_particles)
 
 
 #start_time = time.time()

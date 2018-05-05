@@ -77,12 +77,13 @@ def read_metadata(metadata_file):
     return models_dir, number_of_classes, input_image_dims
 
 
-def classify_microfossils(source_dir, destination_dir, prediction_func, input_image_dims, confidence_threshold,
+def classify_microfossils(source_dir, destination_dir, relative_path, prediction_func, input_image_dims, confidence_threshold,
                                                 read_grayscale_images=False, recursive_destination_structure=True):
     """
     Recursively traverses the source dir and classifies every image with the prediction function
     :param source_dir: directory file path
     :param destination_dir: destination file path
+    :param relative_path: relative path used for naming crops
     :param prediction_func: a function taking a 4D numpy array as input
     :param input_image_dims: a tuple of (height, width) of the images
     :param confidence_threshold: a number in the range [0, 1]
@@ -125,7 +126,7 @@ def classify_microfossils(source_dir, destination_dir, prediction_func, input_im
         predictions = prediction_func(input_vector)
 
         # Output logic here
-        trimmed_path = os.path.join(source_dir, image_path).replace("./", "")
+        trimmed_path = os.path.join(relative_path, image_path).replace("./", "")
         records.append((trimmed_path, predictions[0]))
         classified_image_path = trimmed_path.replace("/", ".")
 
@@ -147,7 +148,9 @@ def classify_microfossils(source_dir, destination_dir, prediction_func, input_im
         source_subdir = os.path.join(source_dir, subdir)
         destination_subdir = os.path.join(destination_dir, subdir)
         target_destination = destination_subdir if recursive_destination_structure else destination_dir
-        sub_records = classify_microfossils(source_subdir, target_destination, prediction_func, input_image_dims,
+        relative_path_subdir = os.path.join(relative_path, subdir)
+        sub_records = classify_microfossils(source_subdir, target_destination, relative_path_subdir,
+                                        prediction_func, input_image_dims,
                                         confidence_threshold, read_grayscale_images, recursive_destination_structure)
         records.extend(sub_records)
 
