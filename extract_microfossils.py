@@ -178,7 +178,7 @@ def extract_microfossils_in_dir(source_dir, destination_dir,
     :param crop_dims: tuple of (height, width) of crops generated
     :param min_microfossil_size: min size of CC for generated crops
     :param clean_particles: boolean
-    :return: void
+    :return: tuple of (number_of_images_processed, number of extracted crops generated)
     """
     if os.path.isdir(source_dir) is False:
         raise Exception("Not a valid source path")
@@ -197,6 +197,8 @@ def extract_microfossils_in_dir(source_dir, destination_dir,
             images_in_dir.append(file)
 
     # Now process the images
+    processed_images = 0
+    generated_crops = 0
     for image_path in images_in_dir:
         full_image_path = os.path.join(source_dir, image_path)
         grayscale_image = cv2.imread(full_image_path, cv2.IMREAD_GRAYSCALE)
@@ -206,6 +208,7 @@ def extract_microfossils_in_dir(source_dir, destination_dir,
 
         unfiltered_crops, filtered_crops = extract_microfossils(grayscale_image, min_microfossil_size,
                                                                 crop_dims, clean_particles)
+        processed_images += 1
         for idx, crop in enumerate(unfiltered_crops):
             crop_file_name = "{}_crop_{}_unfiltered.png".format(os.path.splitext(image_path)[0], idx)
             cv2.imwrite(os.path.join(destination_dir, crop_file_name), crop)
@@ -213,13 +216,18 @@ def extract_microfossils_in_dir(source_dir, destination_dir,
             crop_file_name = "{}_crop_{}_filtered.png".format(os.path.splitext(image_path)[0], idx)
             cv2.imwrite(os.path.join(destination_dir, crop_file_name), crop)
 
+        generated_crops += len(unfiltered_crops) + len(filtered_crops)
+
     # Recursively apply to all subdirs
     for subdir in sub_dirs:
         source_subdir = os.path.join(source_dir, subdir)
         destination_subdir = os.path.join(destination_dir, subdir)
-        extract_microfossils_in_dir(source_subdir, destination_subdir,
+        sub_processed_images, sub_generated_crops = extract_microfossils_in_dir(source_subdir, destination_subdir,
                                                     crop_dims, min_microfossil_size, clean_particles)
+        processed_images += sub_processed_images
+        generated_crops += sub_generated_crops
 
+    return processed_images, generated_crops
 
 #start_time = time.time()
 #extract_microfossils_in_dir(SOURCE_DIR, DESTINATION_DIR)

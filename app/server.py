@@ -172,9 +172,11 @@ class BatchProcessingProcess(Process):
         os.makedirs(extraction_dir_path)  # Create the dir
 
         self.zip_object.extractall(working_dir_path)
-        extract_microfossils.extract_microfossils_in_dir(working_dir_path, extraction_dir_path,
+        processed_images, generated_crops = extract_microfossils.extract_microfossils_in_dir(working_dir_path,
+                                                                extraction_dir_path,
                                                                 self.crop_dims,
                                                                 self.min_microfossil_size, self.clean_particles)
+        print("Processed images: {}, generated crops: {}".format(processed_images, generated_crops))
         #shutil.rmtree(working_dir_path)
         print("Working dir to delete: {}".format(working_dir_path))
         # Dir ready for processing
