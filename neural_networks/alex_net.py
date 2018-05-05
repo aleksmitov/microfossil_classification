@@ -13,6 +13,7 @@
 
 from numpy import *
 import os
+os.sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 #from pylab import *
 import numpy as np
 #import matplotlib.pyplot as plt
@@ -20,10 +21,11 @@ import numpy as np
 import time
 import urllib
 from numpy import random
+import sys
 
 
 import tensorflow as tf
-
+print("Path: {}".format(sys.path))
 from cnn_building_blocks import weight_variable, bias_variable
 
 
