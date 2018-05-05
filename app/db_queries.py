@@ -25,7 +25,7 @@ def update_batch(db_cursor, batch_id, images_processed, generated_crops):
     :param generated_crops: integer, number of generated crops
     :return: None
     """
-    query = """UPDATE batches SET(images_processed = ?, crops_generated = ?) WHERE id = ? """
+    query = """UPDATE batches SET images_processed = ?, crops_generated = ? WHERE id = ? """
     db_cursor.execute(query, (images_processed, generated_crops, batch_id))
 
 
@@ -39,5 +39,6 @@ def finish_batch(db_cursor, batch_id, location, elapsed_time, size):
     :param size: integer, size of the archive
     :return: None
     """
-    query = """UPDATE batches SET(location = ?, elapsed_time = ?, size = ?, status = ?) WHERE id = ? """
-    db_cursor.execute(query, (location, elapsed_time, size, STATUS_COMPLETED, batch_id))
+    print("location: {}, elapsed time: {}".format(location, elapsed_time))
+    query = """UPDATE batches SET location = ?, elapsed_time = ?, size = ?, status = ? WHERE id = ? """
+    db_cursor.execute(query, (location, elapsed_time.total_seconds(), size, STATUS_COMPLETED, batch_id))
