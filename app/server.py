@@ -30,6 +30,7 @@ METADATA_FILE = "../model_metadata.json"
 MODEL_TO_LOAD = "Alex_Net_classes_2_channels_3_batch_512_learning_rate_1e-05/Alex_Net_classes_2_channels_3"
 CROP_DIMS = (200, 200)
 ARCHIVES_DIR = "./uploads/archives"
+CONFIDENCE_THRESHOLD = 0.85
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "./static/uploads"
@@ -63,7 +64,10 @@ def batch_extract_and_classify():
             return redirect(request.url)
 
         zip_object = zipfile.ZipFile(file.stream)
-        batch_process = BatchProcessingProcess(zip_object)
+        metadata = Metadata(METADATA_FILE)
+        model_path = os.path.join("..", (os.path.join(metadata.models_dir, MODEL_TO_LOAD)))
+        batch_process = BatchProcessingProcess(zip_object, ARCHIVES_DIR, CROP_DIMS, MIN_MICROFOSSIL_SIZE,
+                                               CONFIDENCE_THRESHOLD, metadata, model_path, app.config['UPLOAD_FOLDER'])
         batch_process.start()
         batch_process.join(0.0001)
         flash("Archive uploaded successfully for processing!")
@@ -144,24 +148,9 @@ def file_extension(filename):
     return filename.rsplit('.', 1)[1].lower()
 
 
-class BatchProcessingThread(Thread):
-    def __init__(self, val):
-        ''' Constructor. '''
-
-        Thread.__init__(self)
-        self.val = val
-
-    def run(self):
-        while True:
-            print("Running thread")
-        extension = file_extension(file.filename)
-        unique_dirname = str(uuid.uuid4())
-        os.makedirs(unique_dirname)  # Create the dir
-
-
 class BatchProcessingProcess(Process):
     def __init__(self, zip_object, archives_dir, crops_dims, min_microfossil_size, confidence_threshold,
-                 model_metadata, model_weights):
+                 model_metadata, model_weights, public_files_dir):
         Process.__init__(self)
         self.zip_object = zip_object
         self.archives_dir = archives_dir
@@ -171,6 +160,7 @@ class BatchProcessingProcess(Process):
         self.model_metadata = model_metadata
         self.model_weights = model_weights
         self.clean_particles = True
+        self.public_files_dir = public_files_dir
 
     def run(self):
         unique_dirname = str(uuid.uuid4())
@@ -179,7 +169,7 @@ class BatchProcessingProcess(Process):
 
         unique_dirname = str(uuid.uuid4())
         extraction_dir_path = os.path.join(self.archives_dir, unique_dirname)
-        os.makedirs(working_dir_path)  # Create the dir
+        os.makedirs(extraction_dir_path)  # Create the dir
 
         self.zip_object.extractall(working_dir_path)
         extract_microfossils.extract_microfossils_in_dir(working_dir_path, extraction_dir_path, self.crop_dims,
@@ -189,7 +179,6 @@ class BatchProcessingProcess(Process):
         # Dir ready for processing
 
         neural_net = neural_networks.alex_net.alex_net
-        model_path = os.path.join(self.model_metadata.models_dir, self.model_weights)
         input_image_dims = self.model_metadata.input_image_dims
         input_dims = (1,) + input_image_dims + (3,)  # Dimensions of the input tensor for the neural net
 
@@ -200,12 +189,12 @@ class BatchProcessingProcess(Process):
 
         print("Starting classification...")
         with tf.Session() as session, open(records_file_path, "wb") as csv_file:
-            prediction_func = functools.partial(predict, x=x, y_prime=y_prime, dropout=dropout, session=session)
+            prediction_func = functools.partial(predict.predict, x=x, y_prime=y_prime, dropout=dropout, session=session)
             session.run(tf.global_variables_initializer())
-            saver.restore(session, model_path)
-            print("Loaded model weights: {}".format(model_path))
+            saver.restore(session, self.model_weights)
+            print("Loaded model weights: {}".format(self.model_weights))
             records = predict.classify_microfossils(working_dir_path, extraction_dir_path, prediction_func,
-                                                    self.crop_dims,
+                                                    input_image_dims,
                                                     self.confidence_threshold, False,
                                                     recursive_destination_structure=True)
             print("Writing csv output...")
@@ -215,7 +204,10 @@ class BatchProcessingProcess(Process):
         print("Done with classification output")
 
         # Now zip extraction dir
-        
+        unique_filename = str(uuid.uuid4()) + ".zip"
+        zip_path = os.path.join(self.public_files_dir, unique_filename)
+        shutil.make_archive(zip_path, 'zip', extraction_dir_path)
+        print("Done archiving!")
 
 
 
