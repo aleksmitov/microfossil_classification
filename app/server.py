@@ -14,6 +14,7 @@ import functools
 import tempfile
 import uuid
 import zipfile
+import sqlite3
 from PIL import Image
 
 os.sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,6 +37,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "./static/uploads"
 app.secret_key = "secret_key"
 
+DATABASE_FILE = "example.db"
+
 
 @app.route("/")
 def index():
@@ -46,6 +49,7 @@ def index():
 def batch_extract_and_classify():
     start_time = time.time()
     uploaded_archive_link = None
+    db_connections = sqlite3.connect(DATABASE_FILE)
 
     if request.method == "POST":
         # check if the post request has the file part
