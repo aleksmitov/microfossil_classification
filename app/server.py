@@ -8,6 +8,7 @@ import shutil
 import json
 import csv
 import time
+import datetime
 import numpy as np
 import tensorflow as tf
 import functools
@@ -38,7 +39,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = "./static/uploads"
 app.secret_key = "secret_key"
 
-DATABASE_FILE = "example.db"
+DATABASE_FILE = "database.db"
 
 
 @app.route("/")
@@ -50,7 +51,8 @@ def index():
 def batch_extract_and_classify():
     start_time = time.time()
     uploaded_archive_link = None
-    db_connections = sqlite3.connect(DATABASE_FILE)
+    db_connection = sqlite3.connect(DATABASE_FILE)
+    db_cursor = db_connection.cursor()
 
     if request.method == "POST":
         # check if the post request has the file part
@@ -68,13 +70,20 @@ def batch_extract_and_classify():
             flash("Invalid file or extension!")
             return redirect(request.url)
 
+        current_date = datetime.datetime.now()
+        batch_id = db_queries.create_batch(db_cursor, current_date)
+        db_cursor.commit()
+        print("BATCH ID: {}".format(batch_id))
         zip_object = zipfile.ZipFile(file.stream)
         metadata = Metadata(METADATA_FILE)
         model_path = os.path.join("..", (os.path.join(metadata.models_dir, MODEL_TO_LOAD)))
         batch_process = BatchProcessingProcess(zip_object, ARCHIVES_DIR, CROP_DIMS, MIN_MICROFOSSIL_SIZE,
-                                               CONFIDENCE_THRESHOLD, metadata, model_path, app.config['UPLOAD_FOLDER'])
+                                               CONFIDENCE_THRESHOLD, metadata, model_path, app.config['UPLOAD_FOLDER'],
+                                               db_cursor, batch_id)
         batch_process.start()
         batch_process.join(0.0001)
+
+        db_cursor.commit()
         flash("Archive uploaded successfully for processing!")
 
     elapsed_time = time.time() - start_time
@@ -155,7 +164,7 @@ def file_extension(filename):
 
 class BatchProcessingProcess(Process):
     def __init__(self, zip_object, archives_dir, crops_dims, min_microfossil_size, confidence_threshold,
-                 model_metadata, model_weights, public_files_dir):
+                 model_metadata, model_weights, public_files_dir, db_cursor, batch_id):
         Process.__init__(self)
         self.zip_object = zip_object
         self.archives_dir = archives_dir
@@ -166,8 +175,11 @@ class BatchProcessingProcess(Process):
         self.model_weights = model_weights
         self.clean_particles = True
         self.public_files_dir = public_files_dir
+        self.db_cursor = db_cursor
+        self.batch_id = batch_id
 
     def run(self):
+        start_time = datetime.now()
         unique_dirname = str(uuid.uuid4())
         working_dir_path = os.path.join(self.archives_dir, unique_dirname)
         os.makedirs(working_dir_path)  # Create the dir
@@ -181,6 +193,8 @@ class BatchProcessingProcess(Process):
                                                                 extraction_dir_path,
                                                                 self.crop_dims,
                                                                 self.min_microfossil_size, self.clean_particles)
+        db_queries.update_batch(self.db_cursor, self.batch_id, processed_images, generated_crops)
+        self.db_cursor.commit()
         print("Processed images: {}, generated crops: {}".format(processed_images, generated_crops))
         #shutil.rmtree(working_dir_path)
         print("Working dir to delete: {}".format(working_dir_path))
@@ -225,9 +239,14 @@ class BatchProcessingProcess(Process):
         unique_filename = str(uuid.uuid4()) + ".zip"
         zip_path = os.path.join(self.public_files_dir, unique_filename)
         shutil.make_archive(zip_path, 'zip', classification_dir_path)
+        zip_size = os.path.getsize(zip_path)
+        elapsed_time = datetime.now() - start_time
 
+        db_queries.finish_batch(self.db_cursor, self.batch_id, unique_filename, elapsed_time, zip_size)
+        self.db_cursor.commit()
         # shutil.rmtree(classification_dir_path)
         print("Classification dir to delete: {}".format(classification_dir_path))
+        print("Elapsed time: {} seconds".format(elapsed_time))
         print("Done archiving!")
 
 
