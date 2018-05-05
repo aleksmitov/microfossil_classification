@@ -179,7 +179,7 @@ def extract_and_classify_image(image_file, metadata, model_to_load, min_microfos
                 image = cv2.resize(image, (metadata.input_image_dims[1], metadata.input_image_dims[0]))
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             input_vector = image.reshape((1,) + image.shape)
-            predictions = prediction_func(input_vector)
+            predictions = prediction_func(input_vector)[0]
             unfiltered_crops_results.append(predictions)
 
         for image in filtered_crops:
@@ -187,7 +187,7 @@ def extract_and_classify_image(image_file, metadata, model_to_load, min_microfos
                 image = cv2.resize(image, (metadata.input_image_dims[1], metadata.input_image_dims[0]))
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
             input_vector = image.reshape((1,) + image.shape)
-            predictions = prediction_func(input_vector)
+            predictions = prediction_func(input_vector)[0]
             filtered_crops_results.append(predictions)
 
     return zip(unfiltered_crops, unfiltered_crops_results), zip(filtered_crops, filtered_crops_results)

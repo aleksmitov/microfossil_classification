@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 import os
 import cv2
@@ -24,7 +24,7 @@ MODEL_TO_LOAD = "Alex_Net_classes_2_channels_3_batch_512_learning_rate_1e-05/Ale
 CROP_DIMS = (200, 200)
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = "./uploads"
+app.config['UPLOAD_FOLDER'] = "./static/uploads"
 
 @app.route("/")
 def index():
@@ -41,17 +41,22 @@ def index():
         unique_filename = str(uuid.uuid4()) + ".png"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         cv2.imwrite(file_path, crop)
-        unfiltered_images_paths_predictions.append((file_path, crop_predictions))
+        link_to_file = url_for("static", filename="uploads/{}".format(unique_filename), _external=True)
+        unfiltered_images_paths_predictions.append((link_to_file, crop_predictions.tolist()))
 
     for crop, crop_predictions in filtered_predictions:
         unique_filename = str(uuid.uuid4()) + ".png"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         cv2.imwrite(file_path, crop)
-        filtered_images_paths_predictions.append((file_path, crop_predictions))
+        link_to_file = url_for("static", filename="uploads/{}".format(unique_filename), _external=True)
+        filtered_images_paths_predictions.append((link_to_file, crop_predictions.tolist()))
 
     elapsed_time = time.time() - start_time
-    return "Tempdir: {}, Elapsed time: {}\n{} ||| {}".format(tempfile.gettempdir(), elapsed_time,
-                                                      unfiltered_images_paths_predictions, filtered_images_paths_predictions)
+    return render_template("image_extraction_and_classification.html",
+                                    unfiltered_predictions=unfiltered_images_paths_predictions,
+                                    filtered_predictions=filtered_images_paths_predictions)
+    #return "Tempdir: {}, Elapsed time: {}\n{} ||| {}".format(tempfile.gettempdir(), elapsed_time,
+    #                                                  unfiltered_images_paths_predictions, filtered_images_paths_predictions)
 
 
 def is_file_allowed(filename, allowed_extensions):

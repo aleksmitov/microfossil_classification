@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <pre>
+    Unfiltered:
+    {% for (image_path, predictions) in unfiltered_predictions %}
+        image path: {{image_path}}, predictions: {{predictions}}
+        {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+    {% endfor %}
+    Filtered:
+    {% for (image_path, predictions) in filtered_predictions %}
+        image path: {{image_path}}, predictions: {{predictions}}
+        {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+    {% endfor %}
+    </pre>>
+</body>
+</html>
