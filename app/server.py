@@ -17,7 +17,7 @@ import neural_networks
 import predict
 from Metadata import Metadata
 
-ALLOWED_EXTENSIONS = set(["png", "tif"])
+ALLOWED_EXTENSIONS = set(["png", "tif", "jpg", "jpeg", "bmp"])
 
 MIN_MICROFOSSIL_SIZE = 2
 METADATA_FILE = "../model_metadata.json"
@@ -43,26 +43,28 @@ def extract_and_classify():
     if request.method == "POST":
         # check if the post request has the file part
         if "image" not in request.files:
-            flash('No file part')
+            flash("No file part")
             return redirect(request.url)
         file = request.files["image"]
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            flash('No selected file')
+            flash("No selected file")
             return redirect(request.url)
-        if file and is_file_allowed(file.filename, ALLOWED_EXTENSIONS):
-            extension = file_extension(file.filename)
-            unique_filename = str(uuid.uuid4()) + ".png"
-            image_object = Image.open(file.stream)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            # Also converts to desired image format
-            image_object.save(file_path)
-            #file.save(file_path)
+        if file is None or is_file_allowed(file.filename, ALLOWED_EXTENSIONS) is False:
+            flash("Invalid file or extension!")
+            return redirect(request.url)
+        extension = file_extension(file.filename)
+        unique_filename = str(uuid.uuid4()) + ".png"
+        image_object = Image.open(file.stream)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        # Also converts to desired image format
+        image_object.save(file_path)
+        uploaded_image_link = url_for("static", filename="uploads/{}".format(unique_filename), _external=True)
+        #file.save(file_path)
         metadata = Metadata(METADATA_FILE)
         model_path = os.path.join("..", (os.path.join(metadata.models_dir, MODEL_TO_LOAD)))
-        image_file = "./test.png"
-        unfiltered_predictions, filtered_predictions = predict.extract_and_classify_image(image_file, metadata,
+        unfiltered_predictions, filtered_predictions = predict.extract_and_classify_image(file_path, metadata,
                                                                         model_path, MIN_MICROFOSSIL_SIZE, CROP_DIMS, True)
 
         for crop, crop_predictions in unfiltered_predictions:
@@ -79,7 +81,10 @@ def extract_and_classify():
             link_to_file = url_for("static", filename="uploads/{}".format(unique_filename), _external=True)
             filtered_images_paths_predictions.append((link_to_file, crop_predictions.tolist()))
 
+        flash("Successfully processed image!")
+
     elapsed_time = time.time() - start_time
+
     return render_template("image_extraction_and_classification.html",
                                     unfiltered_predictions=unfiltered_images_paths_predictions,
                                     filtered_predictions=filtered_images_paths_predictions,

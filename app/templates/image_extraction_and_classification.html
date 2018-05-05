@@ -6,8 +6,17 @@
 </head>
 <body>
     Elapsed time: {{elapsed_time}} seconds.
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
     {% if uploaded_image_link is not none %}
-        <img src="{{uploaded_image_link}}">
+        <img src="{{uploaded_image_link}}" height="300" width="300">
     {% endif %}
     <form method="post" enctype="multipart/form-data" >
       <p><input type="file" name="image" accept="image/*">
@@ -18,11 +27,13 @@
     Unfiltered:
     {% for (image_path, predictions) in unfiltered_predictions %}
         image path: {{image_path}}, predictions: {{predictions}}
+        <img src="{{image_path}}">
         {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
     {% endfor %}
     Filtered:
     {% for (image_path, predictions) in filtered_predictions %}
         image path: {{image_path}}, predictions: {{predictions}}
+        <img src="{{image_path}}">
         {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
     {% endfor %}
     </pre>>
