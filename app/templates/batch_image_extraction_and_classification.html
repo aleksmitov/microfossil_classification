@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    Elapsed time: {{elapsed_time}} seconds.
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% if uploaded_archive_link is not none %}
+        <img src="{{uploaded_image_link}}" height="300" width="300">
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" >
+      <p><input type="file" name="archive" accept=".zip">
+         <input type="submit" value="Upload">
+    </form>
+
+</body>
+</html>

@@ -169,11 +169,14 @@ def extract_microfossils(grayscale_image, min_microfossil_pixel_size, crop_dims,
     return unfiltered_crops, filtered_crops
 
 
-def extract_microfossils_in_dir(source_dir, destination_dir):
+def extract_microfossils_in_dir(source_dir, destination_dir, crop_dims, min_microfossil_size, clean_particles):
     """
     Recursively extracts microfossils from images in the source dir and its subdirs
     :param source_dir: string with the path to the source folder
     :param destination_dir: string with the path to the destination folder
+    :param crop_dims: tuple of (height, width) of crops generated
+    :param min_microfossil_size: min size of CC for generated crops
+    :param clean_particles: boolean
     :return: void
     """
     if os.path.isdir(source_dir) is False:
@@ -200,8 +203,8 @@ def extract_microfossils_in_dir(source_dir, destination_dir):
             print("Couldn't read image and was skipped: {}".format(full_image_path))
             continue
 
-        unfiltered_crops, filtered_crops = extract_microfossils(grayscale_image, MIN_MICROFOSSIL_SIZE,
-                                                                                    CROP_DIMS, REMOVE_SIDE_PARTICLES)
+        unfiltered_crops, filtered_crops = extract_microfossils(grayscale_image, min_microfossil_size,
+                                                                crop_dims, clean_particles)
         for idx, crop in enumerate(unfiltered_crops):
             crop_file_name = "{}_crop_{}_unfiltered.png".format(os.path.splitext(image_path)[0], idx)
             cv2.imwrite(os.path.join(destination_dir, crop_file_name), crop)
