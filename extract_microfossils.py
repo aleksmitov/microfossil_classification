@@ -216,8 +216,8 @@ def extract_microfossils_in_dir(source_dir, destination_dir):
         extract_microfossils_in_dir(source_subdir, destination_subdir)
 
 
-start_time = time.time()
-extract_microfossils_in_dir(SOURCE_DIR, DESTINATION_DIR)
+#start_time = time.time()
+#extract_microfossils_in_dir(SOURCE_DIR, DESTINATION_DIR)
 #filter_crops_in_dir(SOURCE_DIR, DESTINATION_DIR)
-elapsed_time = time.time() - start_time
-print("Done extracting microfossils. Time spent: {}sec.".format(elapsed_time))
+#elapsed_time = time.time() - start_time
+#print("Done extracting microfossils. Time spent: {}sec.".format(elapsed_time))

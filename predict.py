@@ -9,6 +9,7 @@ import os
 import csv
 
 import neural_networks.alex_net
+import extract_microfossils
 
 IMAGE_SOURCE_DIR = "./unprocessed_crops"
 IMAGE_DEST_DIR = "./processed_crops"
@@ -153,6 +154,45 @@ def classify_microfossils(source_dir, destination_dir, prediction_func, input_im
     return records
 
 
+def extract_and_classify_image(image_file, metadata, model_to_load, min_microfossil_size, crop_dims, clean_crops=False):
+    # Get the crops
+    image = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
+    if image is None:
+        raise Exception("Not a valid image path!")
+    unfiltered_crops, filtered_crops = extract_microfossils.extract_microfossils(image, min_microfossil_size,
+                                                                                 crop_dims, clean_crops)
+    # Define the computational graph
+    neural_net = neural_networks.alex_net.alex_net
+    input_network_dims = (1,) + metadata.input_image_dims + (3,)  # Dimensions of the input tensor for the neural net
+
+    x, y_prime, dropout, saver = define_computational_graph(input_dims=input_network_dims,
+                                                                    net_architecture=neural_net,
+                                                                    number_of_classes=metadata.number_of_classes)
+    unfiltered_crops_results, filtered_crops_results = [], []
+    with tf.Session() as session:
+        prediction_func = functools.partial(predict, x=x, y_prime=y_prime, dropout=dropout, session=session)
+        session.run(tf.global_variables_initializer())
+        saver.restore(session, model_to_load)
+        print("Loaded model weights: {}".format(model_to_load))
+        for image in unfiltered_crops:
+            if image.shape[0] != metadata.input_image_dims[0] or image.shape[1] != metadata.input_image_dims[1]:
+                image = cv2.resize(image, (metadata.input_image_dims[1], metadata.input_image_dims[0]))
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            input_vector = image.reshape((1,) + image.shape)
+            predictions = prediction_func(input_vector)
+            unfiltered_crops_results.append(predictions)
+
+        for image in filtered_crops:
+            if image.shape[0] != metadata.input_image_dims[0] or image.shape[1] != metadata.input_image_dims[1]:
+                image = cv2.resize(image, (metadata.input_image_dims[1], metadata.input_image_dims[0]))
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            input_vector = image.reshape((1,) + image.shape)
+            predictions = prediction_func(input_vector)
+            filtered_crops_results.append(predictions)
+
+    return zip(unfiltered_crops, unfiltered_crops_results), zip(filtered_crops, filtered_crops_results)
+
+
 def main():
     models_dir, number_of_classes, input_image_dims = read_metadata(METADATA_FILE)
     neural_net = neural_networks.alex_net.alex_net
@@ -176,6 +216,6 @@ def main():
     print("DONE")
 
 
-main()
+#main()
 
 
