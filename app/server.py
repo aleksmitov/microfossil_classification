@@ -46,7 +46,7 @@ DATABASE_FILE = "database.db"
 
 @app.route("/")
 def index():
-    return "Index!"
+    return redirect(url_for("extract_and_classify"))
 
 
 @app.route("/batch_extract_and_classify", methods=["GET", "POST"])

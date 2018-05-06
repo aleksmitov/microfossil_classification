@@ -11,7 +11,22 @@
     <title>Hello, world!</title>
   </head>
   <body>
+
+
       <div class="container">
+          <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5">
+              <a class="navbar-brand" href="#">Microfossil classification tools</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                  <a class="nav-item nav-link" href="/">Home</a>
+                  <a class="nav-item nav-link" href="/extract_and_classify_single_image">Extract and classify</a>
+                  <a class="nav-item nav-link" href="/batch_extract_and_classify">Batch extract and classify</a>
+                </div>
+              </div>
+          </nav>
 
         {% with messages = get_flashed_messages() %}
           {% if messages %}
