@@ -30,17 +30,33 @@
                 </div>
 
         <div class="row">
-            <div class="col">
+            <div class="col col-sm-1">
+            </div>
+            <div class="col mx-5 mb-5">
                 {% if uploaded_image_link is not none %}
-                    <img src="{{uploaded_image_link}}" class="img-fluid">
+
+                <div class="card border-info mb-3" >
+
+                      <img class="card-img-top" src="{{uploaded_image_link}}" alt="Card image cap">
+                      <div class="card-body">
+
+                          <h2 class="card-title text-center text-secondary"><strong>Uploaded image</strong></h2>
+                      </div>
+                </div>
                 {% endif %}
+            </div>
+            <div class="col col-sm-1">
             </div>
         </div>
 
+
+
         <div class="row">
+            <div class="col col-sm-1">
+            </div>
             <div class="col">
                 {% for (image_path, predictions) in unfiltered_predictions %}
-                    <div class="card border-dark mb-3" style="width: 22rem;">
+                    <div class="card border-dark mb-3 mx-5" >
                         <div class="card-header">
                             Unfiltered crop #{{ loop.index0 + 1}}
                         </div>
@@ -56,7 +72,7 @@
             </div>
             <div class="col">
                 {% for (image_path, predictions) in filtered_predictions %}
-                   <div class="card border-dark mb-3" style="width: 22rem;">
+                   <div class="card border-dark mb-3 mx-5">
                        <div class="card-header">
                             Filtered crop #{{ loop.index0 + 1}}
                        </div>
@@ -70,7 +86,9 @@
                     </div>
                 {% endfor %}
             </div>
+            <div class="col col-sm-1">
             </div>
+        </div>
         </div>
 
 {% endblock %}

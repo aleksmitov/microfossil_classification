@@ -12,7 +12,7 @@
   </head>
   <body>
       <div class="container">
-        Elapsed time: {{elapsed_time}} seconds.
+
         {% with messages = get_flashed_messages() %}
           {% if messages %}
 
@@ -25,6 +25,9 @@
 
           {% endif %}
         {% endwith %}
+          <div class="alert alert-warning" role="alert">
+              Elapsed time: {{'%0.2f' % elapsed_time|float}} seconds.
+          </div>
 
         {% block main_content %}
             Main content goes here
