@@ -1,21 +1,112 @@
 {% extends "body.html" %}
 {% block main_content %}
 
-<form method="post" enctype="multipart/form-data" >
-      <p><input type="file" name="archive" accept=".zip">
-         <input type="submit" value="Upload">
-    </form>
+                <div class="row">
+                    <div class="col">
+                        <div class="jumbotron">
+                          <h1 class="display-4">Microfossil extraction and classification</h1>
+                            <h2 class="text-secondary text-center">For a whole batch of images</h2>
+                          <p class="lead">This is a a tool that's based on a combination of algorithms in Computer Vision and Machine Learning.
+                              Firstly, it detects and isolates individual microfossils into image crops.
+                              Next, it applies a novel filtering technique that removes irrelevant particles in the crops. Finally,
+                              an Artificial Convolutional Neural Network classifies the crops into two categories: <strong>Bulloide</strong> vs <strong>Other</strong>.</p>
+                          <hr class="my-4">
+                            <p><strong>Select a file in ZIP format.</strong></p>
+                            <p><strong>All images within the archive with file formats PNG, JPEG and TIF will be processed.</strong></p>
+                            <form method="post" enctype="multipart/form-data" class="">
+                            <div class="form-group ">
+                                <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                  <div class="input-group-text">Input zip file to process:</div>
+                                </div>
+                                <input type="file" accept=".zip" class="form-control col-sm-4" id="archive" name="archive" placeholder="Sample.zip">
+                              </div>
 
-    <ul>
-    {% for batch in batches %}
-        <li>
-            ID: {{batch.id}}, submitted_on: {{batch.submitted_on}}, {% if batch.location is not none %}
-            <a href="{{batch.location}}"> {% endif %}location:
-                    {{batch.location}} {% if batch.location is not none %} </a> {% endif %},
-            images_processed: {{batch.images_processed}}, crops_generated: {{batch.crops_generated}},
-            elapsed_time: {{batch.elapsed_time}}, size: {{batch.size}}, status: {{batch.status}}, type: {{batch.batch_type}}
-        </li>
+                                <button type="submit" class="btn btn-info btn-lg btn-block mt-5">Submit</button>
+
+                            </div>
+                    </form>
+                        </div>
+
+                    </div>
+                </div>
+
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Submitted on</th>
+      <th scope="col">Status</th>
+      <th scope="col">Images</th>
+      <th scope="col">Crops</th>
+        <th scope="col">Time spent</th>
+      <th scope="col">Size</th>
+      <th scope="col">Type</th>
+      <th scope="col">Delete</th>
+      <th scope="col">File link</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for batch in batches %}
+        <tr>
+            <th scope="row">{{batch.id}}</th>
+            <td>{{batch.submitted_on}}</td>
+            <td>{{batch.status}}</td>
+            <td>
+                {% if batch.images_processed is none%}
+                    TBD
+                {% else %}
+                    {{batch.images_processed}}
+                {% endif %}
+            </td>
+            <td>{% if batch.crops_generated is none%}
+                    TBD
+                {% else %}
+                    {{batch.crops_generated}}
+                {% endif %}</td>
+            <td>
+                {% if batch.elapsed_time is not none%}
+                    {{batch.elapsed_time.strftime("%H hrs, %M mins, %S secs")}}
+                {% else %}
+                    TBD
+                {% endif %}
+            </td>
+            <td>
+                {% if batch.size is not none %}
+                    {% if batch.size >= 1024*1024*1024 %}
+                        {{'%0.1f' % (batch.size / (1024.0*1024*1024))|float}} GB
+                    {% elif  batch.size >= 1024*1024 %}
+                        {{'%0.1f' % (batch.size / (1024.0*1024))|float}} MB
+                    {% else %}
+                        {{'%0.1f' % (batch.size / 1024.0)|float}} KB
+                    {% endif %}
+                {% else %}
+                    TBD
+                {% endif %}
+            </td>
+            <td>
+                {% if batch.batch_type == 0%}
+                    classification
+                {% else%}
+                    {{batch.batch_type}}
+                {% endif %}
+            </td>
+            <td>
+                {% if batch.location is not none %}
+                    <a href="/delete_batch/{{batch.id}}"class="btn btn-danger ">Delete</a>
+                {% else %}
+                    <a href="#" download="" class="btn btn-danger disabled">Delete</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if batch.location is not none %}
+                    <a href="{{batch.location}}" download="" class="btn btn-warning ">Download</a>
+                {% else %}
+                    <a href="#" download="" class="btn btn-warning disabled">Download</a>
+                {% endif %}
+            </td>
+        </tr>
     {% endfor %}
-    </ul>
-
+  </tbody>
+</table>
 {% endblock %}

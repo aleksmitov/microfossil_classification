@@ -60,7 +60,7 @@ def get_batches(db_cursor, limit=1000):
         location = row_data[2]
         images_processed = row_data[3]
         crops_generated = row_data[4]
-        elapsed_time = None if row_data[5] is None else datetime.timedelta(seconds=row_data[5])
+        elapsed_time = None if row_data[5] is None else convert_to_time(row_data[5])
         size = row_data[6]
         status = row_data[7]
         batch_type = row_data[8]
@@ -69,3 +69,11 @@ def get_batches(db_cursor, limit=1000):
         batches.append(batch)
 
     return batches
+
+
+def convert_to_time(seconds):
+    seconds = int(round(seconds))
+    hours = int(seconds / 3600)
+    mins = int((seconds%3600)/60)
+    sec = (seconds%3600)%60
+    return datetime.time(hours,mins,sec)
