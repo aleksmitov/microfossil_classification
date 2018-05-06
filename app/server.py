@@ -139,6 +139,7 @@ def extract_and_classify():
                                                                         model_path, MIN_MICROFOSSIL_SIZE, CROP_DIMS, True)
 
         for crop, crop_predictions in unfiltered_predictions:
+            #crop_predictions = crop_predictions.round(4)
             unique_filename = str(uuid.uuid4()) + ".png"
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
             cv2.imwrite(file_path, crop)
@@ -146,6 +147,7 @@ def extract_and_classify():
             unfiltered_images_paths_predictions.append((link_to_file, crop_predictions.tolist()))
 
         for crop, crop_predictions in filtered_predictions:
+            #crop_predictions = crop_predictions.round(4)
             unique_filename = str(uuid.uuid4()) + ".png"
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
             cv2.imwrite(file_path, crop)
@@ -155,7 +157,6 @@ def extract_and_classify():
         flash("Successfully processed image!")
 
     elapsed_time = time.time() - start_time
-
     return render_template("image_extraction_and_classification.html",
                                     unfiltered_predictions=unfiltered_images_paths_predictions,
                                     filtered_predictions=filtered_images_paths_predictions,

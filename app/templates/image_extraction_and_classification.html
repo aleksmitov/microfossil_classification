@@ -19,20 +19,37 @@
         </div>
         <div class="row">
             <div class="col">
-                <pre>
-                Unfiltered:
                 {% for (image_path, predictions) in unfiltered_predictions %}
-                    image path: {{image_path}}, predictions: {{predictions}}
-                    <img src="{{image_path}}" class="img-fluid">
-                    {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+                    <div class="card border-dark mb-3" style="width: 22rem;">
+                        <div class="card-header">
+                            Unfiltered crop #{{ loop.index0 + 1}}
+                        </div>
+                      <img class="card-img-top" src="{{image_path}}" alt="Card image cap">
+                      <div class="card-body">
+
+                          <h5 class="card-title">Bulloide: {{'%0.2f' % (100*predictions[0])|float}}% </h5>
+                          <h5 class="card-title">Other: {{'%0.2f' % (100*predictions[1])|float}}%</h5>
+                          <a href="{{image_path}}" download="" class="btn btn-warning">Download</a>
+                      </div>
+                    </div>
                 {% endfor %}
-                Filtered:
+            </div>
+            <div class="col">
                 {% for (image_path, predictions) in filtered_predictions %}
-                    image path: {{image_path}}, predictions: {{predictions}}
-                    <img src="{{image_path}}" class="img-fluid">
-                    {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+                   <div class="card border-dark mb-3" style="width: 22rem;">
+                       <div class="card-header">
+                            Filtered crop #{{ loop.index0 + 1}}
+                       </div>
+                      <img class="card-img-top" src="{{image_path}}" alt="Card image cap">
+                      <div class="card-body">
+
+                          <h5 class="card-title">Bulloide: {{'%0.2f' % (100*predictions[0])|float}}% </h5>
+                          <h5 class="card-title">Other: {{'%0.2f' % (100*predictions[1])|float}}%</h5>
+                          <a href="{{image_path}}" download="" class="btn btn-warning">Download</a>
+                      </div>
+                    </div>
                 {% endfor %}
-                </pre>
+            </div>
             </div>
         </div>
 
