@@ -1,25 +1,39 @@
 {% extends "body.html" %}
 {% block main_content %}
-    {% if uploaded_image_link is not none %}
-        <img src="{{uploaded_image_link}}" height="300" width="300">
-    {% endif %}
-    <form method="post" enctype="multipart/form-data" >
-      <p><input type="file" name="image" accept="image/*">
-         <input type="submit" value="Upload">
-    </form>
 
-    <pre>
-    Unfiltered:
-    {% for (image_path, predictions) in unfiltered_predictions %}
-        image path: {{image_path}}, predictions: {{predictions}}
-        <img src="{{image_path}}">
-        {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
-    {% endfor %}
-    Filtered:
-    {% for (image_path, predictions) in filtered_predictions %}
-        image path: {{image_path}}, predictions: {{predictions}}
-        <img src="{{image_path}}">
-        {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
-    {% endfor %}
-    </pre>
+        <div class="row">
+            <div class="col">
+                {% if uploaded_image_link is not none %}
+                    <img src="{{uploaded_image_link}}" class="img-fluid">
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" >
+                    <div class="form-group row">
+                        <label for="image" class="col-auto col-form-label col-form-label-lg">Input image to process:</label>
+                        <input type="file" accept="image/*" class="form-control col-sm-4" id="image" name="image" placeholder="Sample.png">
+                        <div class="col-sm-2">
+                            <button type="submit" class="btn btn-primary ">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <pre>
+                Unfiltered:
+                {% for (image_path, predictions) in unfiltered_predictions %}
+                    image path: {{image_path}}, predictions: {{predictions}}
+                    <img src="{{image_path}}" class="img-fluid">
+                    {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+                {% endfor %}
+                Filtered:
+                {% for (image_path, predictions) in filtered_predictions %}
+                    image path: {{image_path}}, predictions: {{predictions}}
+                    <img src="{{image_path}}" class="img-fluid">
+                    {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
+                {% endfor %}
+                </pre>
+            </div>
+        </div>
+
 {% endblock %}

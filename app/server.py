@@ -102,7 +102,6 @@ def batch_extract_and_classify():
                                     elapsed_time=elapsed_time, batches=batches)
 
 
-
 @app.route("/extract_and_classify_single_image", methods=["GET", "POST"])
 def extract_and_classify():
     start_time = time.time()
