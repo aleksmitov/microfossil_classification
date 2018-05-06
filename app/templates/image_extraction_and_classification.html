@@ -1,20 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    Elapsed time: {{elapsed_time}} seconds.
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul class="flashes">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% extends "body.html" %}
+{% block main_content %}
     {% if uploaded_image_link is not none %}
         <img src="{{uploaded_image_link}}" height="300" width="300">
     {% endif %}
@@ -36,6 +21,5 @@
         <img src="{{image_path}}">
         {# <li><a href="{{ item.href }}">{{ item.caption }}</a></li> #}
     {% endfor %}
-    </pre>>
-</body>
-</html>
+    </pre>
+{% endblock %}

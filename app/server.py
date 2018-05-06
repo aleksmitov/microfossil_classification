@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, url_for, render_template, flash
 from werkzeug.utils import secure_filename
 from threading import Thread
 from multiprocessing import Process
+from enum import Enum
 import os
 import cv2
 import shutil
@@ -23,6 +24,7 @@ import extract_microfossils
 import neural_networks
 import predict
 import db_queries
+import Batch
 from Metadata import Metadata
 
 ALLOWED_INPUT_IMAGE_EXTENSIONS = set(["png", "tif", "jpg", "jpeg", "bmp"])
@@ -85,11 +87,19 @@ def batch_extract_and_classify():
 
         db_connection.commit()
         flash("Archive uploaded successfully for processing!")
+        return redirect(request.url)
+
 
     elapsed_time = time.time() - start_time
+    batches = db_queries.get_batches(db_cursor, limit=100)
+    for batch in batches:
+        pass
+        if batch.location is not None:
+            batch.location = url_for("static", filename="uploads/{}".format(batch.location))
+    db_connection.commit()
 
     return render_template("batch_image_extraction_and_classification.html",
-                                    elapsed_time=elapsed_time)
+                                    elapsed_time=elapsed_time, batches=batches)
 
 
 
@@ -238,23 +248,17 @@ class BatchProcessingProcess(Process):
         # Now zip classification dir
         unique_filename = str(uuid.uuid4())
         zip_path = os.path.join(self.public_files_dir, unique_filename)
-        print("ZIP PATH: {}".format(zip_path))
         shutil.make_archive(zip_path, "zip", classification_dir_path)
         zip_path += ".zip"
         zip_size = os.path.getsize(zip_path)
         elapsed_time = datetime.datetime.now() - start_time
 
-        db_queries.finish_batch(self.db_connection.cursor(), self.batch_id, unique_filename, elapsed_time, zip_size)
+        db_queries.finish_batch(self.db_connection.cursor(), self.batch_id, unique_filename+".zip",
+                                                                                        elapsed_time, zip_size)
         self.db_connection.commit()
+        self.db_connection.close()
         # shutil.rmtree(classification_dir_path)
         print("Classification dir to delete: {}".format(classification_dir_path))
         print("Elapsed time: {} seconds".format(elapsed_time))
         print("Done archiving!")
-
-
-
-
-
-
-
 
