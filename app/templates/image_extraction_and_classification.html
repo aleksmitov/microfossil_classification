@@ -1,22 +1,42 @@
 {% extends "body.html" %}
 {% block main_content %}
 
+                <div class="row">
+                    <div class="col">
+                        <div class="jumbotron">
+                          <h1 class="display-4">Microfossil extraction and classification</h1>
+                          <p class="lead">This is a a tool that's based on a combination of algorithms in Computer Vision and Machine Learning.
+                              Firstly, it detects and isolates individual microfossils into image crops.
+                              Next, it applies a novel filtering technique that removes irrelevant particles in the crops. Finally,
+                              an Artificial Convolutional Neural Network classifies the crops into two categories: <strong>Bulloide</strong> vs <strong>Other</strong>.</p>
+                          <hr class="my-4">
+                            <p><strong>Select an image in PNG, JPEG or TIF file format.</strong></p>
+                            <form method="post" enctype="multipart/form-data" class="">
+                            <div class="form-group ">
+                                <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                  <div class="input-group-text">Input image to process:</div>
+                                </div>
+                                <input type="file" accept="image/*" class="form-control col-sm-4" id="image" name="image" placeholder="Sample.png">
+                              </div>
+
+                                <button type="submit" class="btn btn-info btn-lg btn-block mt-5">Submit</button>
+
+                            </div>
+                    </form>
+                        </div>
+
+                    </div>
+                </div>
+
         <div class="row">
             <div class="col">
                 {% if uploaded_image_link is not none %}
                     <img src="{{uploaded_image_link}}" class="img-fluid">
                 {% endif %}
-                <form method="post" enctype="multipart/form-data" >
-                    <div class="form-group row">
-                        <label for="image" class="col-auto col-form-label col-form-label-lg">Input image to process:</label>
-                        <input type="file" accept="image/*" class="form-control col-sm-4" id="image" name="image" placeholder="Sample.png">
-                        <div class="col-sm-2">
-                            <button type="submit" class="btn btn-primary ">Submit</button>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
+
         <div class="row">
             <div class="col">
                 {% for (image_path, predictions) in unfiltered_predictions %}
